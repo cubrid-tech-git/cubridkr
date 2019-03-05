@@ -78,16 +78,7 @@ echo
 echo 'CUBRID init process complete. Ready for start up.'
 echo
 
-# Container가 비정상 종료되었을 경우 CUBRID 서비스를 정상적으로 종료 후에 CSQL 유틸리티로 Standalnoe 모드 접속 테스트를 합니다.
-su - cubrid -c "cubrid service stop"
-csql -u dba -t -N $CUBRID_DATABASE -S -c 'SELECT VERSION()'
-
-# CSQL 유틸리티로 Standalnoe 모드 접속 테스트에 문제가 없으면 CUBRID 서비스를 시작합니다.
-if [[ $? == 0 ]]; then
-        su - cubrid -c "cubrid service start"
-
-        tail -f /dev/null
-fi
-
+# Container가 비정상 종료되었을 경우를 대비하여 CUBRID 서비스를 정상적으로 종료 후에 시작합니다.
+su - cubrid -c "cubrid service restart"
 
 tail -f /dev/null
