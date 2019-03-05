@@ -1,5 +1,7 @@
 FROM centos:7
 
+MAINTAINER Joo Youngjin <youngjinj@cubrid.com>
+
 ENV CUBRID_VERSION 10.1.2
 ENV CUBRID_BUILD_VERSION 10.1.2.7694-64632b2
 
