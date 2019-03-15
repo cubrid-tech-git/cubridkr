@@ -37,7 +37,8 @@ RUN echo ''; \
     echo 'umask 077' >> /home/cubrid/.bash_profile; \
     echo ''; \
     echo '. /home/cubrid/cubrid.sh' >> /home/cubrid/.bash_profile; \
-    chown -R cubrid:cubrid /home/cubrid
+    chown -R cubrid:cubrid /home/cubrid; \
+    chmod u+s /usr/bin/ping
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh; \
