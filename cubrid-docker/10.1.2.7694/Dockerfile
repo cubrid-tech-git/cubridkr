@@ -8,6 +8,11 @@ ENV CUBRID_BUILD_VERSION 10.1.2.7694-64632b2
 RUN yum install -y epel-release; \
     yum update -y; \
     yum install -y sudo \
+                   net-tools \
+                   telnet \
+                   nc \
+                   expect \
+                   openssh-server \
                    java-1.8.0-openjdk-devel; \
     yum clean all;
 
@@ -15,6 +20,10 @@ RUN localedef -f UTF-8 -i ko_KR ko_KR.utf8; \
     ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 ENV LANG ko_KR.utf8
+
+RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""; \
+    ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""; \
+    ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
 
 RUN mkdir /docker-entrypoint-initdb.d
 
@@ -46,6 +55,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh; \
 
 VOLUME /home/cubrid/CUBRID/databases
 
-EXPOSE 1523 8001 30000 33000
+EXPOSE 22 1523 8001 30000 33000
 
 ENTRYPOINT ["docker-entrypoint.sh"]

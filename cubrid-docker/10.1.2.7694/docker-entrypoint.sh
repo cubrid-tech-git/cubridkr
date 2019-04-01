@@ -20,19 +20,28 @@ if [[ -z "$CUBRID_USER" ]]; then
     CUBRID_USER='dba'
 fi
 
-# 데이터베이스에서 사용할 'dba' 계정의 비밀번호와 사용자 계정의 비밀번호를 설정합니다.
-# '$CUBRID_DBA_PASSWORD', '$CUBRID_PASSWORD' 환경변수를 확인하여 각각 설정합니다.
-# 두 환경변수 중에 하나만 설정되어 있으면 두 환경변수 모두 동일한 값으로 설정합니다.
-# 두 환경변수 모두 설정되어 있지 않으면 '$CUBRID_PASSWORD_EMPTY' 환경변수 값을 1로 설정합니다.
-if [[ ! -z "$CUBRID_DBA_PASSWORD" || -z "$CUBRID_PASSWORD" ]]; then
-    CUBRID_PASSWORD="$CUBRID_DBA_PASSWORD"
-elif [[ -z "$CUBRID_DBA_PASSWORD" || ! -z "$CUBRID_PASSWORD" ]]; then
-    CUBRID_DBA_PASSWORD="$CUBRID_PASSWORD"
-elif [[ -z "$CUBRID_DBA_PASSWORD" || -z "$CUBRID_PASSWORD" ]]; then
-    CUBRID_PASSWORD_EMPTY=1
+# OS에서 사용하는 'cubrid' 계정의 비밀번호를 설정합니다.
+# '$CUBRID_PASSWORD' 환경변수를 확인하여 설정합니다.
+# 환경변수가 설정되어 있지 않으면 'cubrid' 계정의 비밀번호를 'password'로 설정합니다.
+if [[ ! -z "$CUBRID_PASSWORD" ]]; then
+    echo "cubrid:$CUBRID_PASSWORD" | chpasswd
+elif [[ -z "$CUBRID_PASSWORD" ]]; then
+    echo "cubrid:password" | chpasswd
 fi
 
-if [[ ! -e /home/cubrid/cubrid.lck ]]; then
+# 데이터베이스에서 사용하는 'dba' 계정의 비밀번호와 사용자 계정의 비밀번호를 설정합니다.
+# '$CUBRID_DBA_PASSWORD', '$CUBRID_USER_PASSWORD' 환경변수를 확인하여 각각 설정합니다.
+# 두 환경변수 중에 하나만 설정되어 있으면 두 환경변수 모두 동일한 값으로 설정합니다.
+# 두 환경변수 모두 설정되어 있지 않으면 '$CUBRID_USER_PASSWORD_EMPTY' 환경변수 값을 1로 설정합니다.
+if [[ ! -z "$CUBRID_DBA_PASSWORD" || -z "$CUBRID_USER_PASSWORD" ]]; then
+    CUBRID_USER_PASSWORD="$CUBRID_DBA_PASSWORD"
+elif [[ -z "$CUBRID_DBA_PASSWORD" || ! -z "$CUBRID_USER_PASSWORD" ]]; then
+    CUBRID_DBA_PASSWORD="$CUBRID_USER_PASSWORD"
+elif [[ -z "$CUBRID_DBA_PASSWORD" || -z "$CUBRID_USER_PASSWORD" ]]; then
+    CUBRID_USER_PASSWORD_EMPTY=1
+fi
+
+if [[ ! -e $(su - cubrid -c "echo \$CUBRID_DATABASES")/cubrid_databases.lck ]]; then
     # 컨테이너 시작 시 '$CUBRID_DATABASE' 환경변수에 설정된 이름으로 데이터베이스를 생성합니다.
     su - cubrid -c "mkdir -p \$CUBRID_DATABASES/$CUBRID_DATABASE && cubrid createdb -F \$CUBRID_DATABASES/$CUBRID_DATABASE $CUBRID_DATABASE $CUBRID_CHARSET"
     su - cubrid -c "sed s/#server=foo,bar/server=$CUBRID_DATABASE/g -i \$CUBRID/conf/cubrid.conf"
@@ -47,32 +56,33 @@ if [[ ! -e /home/cubrid/cubrid.lck ]]; then
         su - cubrid -c "cubrid loaddb -u $CUBRID_USER -s \$CUBRID/demo/demodb_schema -d \$CUBRID/demo/demodb_objects -v $CUBRID_DATABASE"
     fi
 
-    # '$CUBRID_PASSWORD_EMPTY' 환경변수 값이 1이 아니면 '$CUBRID_DBA_PASSWORD' 환경변수 값으로 DBA 계정의 비밀번호를 설정합니다.
-    if [[ ! "$CUBRID_PASSWORD_EMPTY" = 1 ]]; then
+    # '$CUBRID_USER_PASSWORD_EMPTY' 환경변수 값이 1이 아니면 '$CUBRID_DBA_PASSWORD' 환경변수 값으로 DBA 계정의 비밀번호를 설정합니다.
+    if [[ ! "$CUBRID_USER_PASSWORD_EMPTY" = 1 ]]; then
         su - cubrid -c "csql -u dba $CUBRID_DATABASE -S -c \"alter user dba password '$CUBRID_DBA_PASSWORD'\""
     fi
 
-    # '$CUBRID_PASSWORD_EMPTY' 환경변수 값이 1이 아니면 '$CUBRID_PASSWORD' 환경변수 값으로 사용자 계정의 비밀번호를 설정합니다.
-    if [[ ! "$CUBRID_PASSWORD_EMPTY" = 1 ]]; then
-        su - cubrid -c "csql -u dba -p '$CUBRID_DBA_PASSWORD' $CUBRID_DATABASE -S -c \"alter user $CUBRID_USER password '$CUBRID_PASSWORD'\""
+    # '$CUBRID_USER_PASSWORD_EMPTY' 환경변수 값이 1이 아니면 '$CUBRID_USER_PASSWORD' 환경변수 값으로 사용자 계정의 비밀번호를 설정합니다.
+    if [[ ! "$CUBRID_USER_PASSWORD_EMPTY" = 1 ]]; then
+        su - cubrid -c "csql -u dba -p '$CUBRID_DBA_PASSWORD' $CUBRID_DATABASE -S -c \"alter user $CUBRID_USER password '$CUBRID_USER_PASSWORD'\""
     fi
 
-    su - cubrid -c "touch \$HOME/cubrid.lck"
+    su - cubrid -c "touch \$CUBRID_DATABASES/cubrid_databases.lck"
 fi
 
 # '/docker-entrypoint-initdb.d' 디렉터리에 있는 '*.sql' 파일들을 csql 유틸리티로 실행합니다.
 echo
 for f in /docker-entrypoint-initdb.d/*; do
     case "$f" in
-        *.sql)    echo "$0: running $f"; su - cubrid -c "csql -u $CUBRID_USER -p $CUBRID_PASSWORD $CUBRID_DATABASE -S -i \"$f\""; echo ;;
+        *.sql)    echo "$0: running $f"; su - cubrid -c "csql -u $CUBRID_USER -p $CUBRID_USER_PASSWORD $CUBRID_DATABASE -S -i \"$f\""; echo ;;
         *)        echo "$0: ignoring $f" ;;
     esac
     echo
 done
 
-# 'dba' 계정의 비밀번호와 사용자 계정의 비밀번호가 설정되어 있는 '$CUBRID_DBA_PASSWORD', '$CUBRID_PASSWORD' 두 환경변수를 제거합니다.
-unset CUBRID_DBA_PASSWORD
+# OS의 'cubrid' 계정의 비밀번호와 'dba' 계정, 사용자 계정의 비밀번호가 설정되어 있는 '$CUBRID_PASSWORD', '$CUBRID_DBA_PASSWORD', '$CUBRID_USER_PASSWORD' 두 환경변수를 제거합니다.
 unset CUBRID_PASSWORD
+unset CUBRID_DBA_PASSWORD
+unset CUBRID_USER_PASSWORD
 
 echo
 echo 'CUBRID init process complete. Ready for start up.'
@@ -80,5 +90,8 @@ echo
 
 # Container가 비정상 종료되었을 경우를 대비하여 CUBRID 서비스를 정상적으로 종료 후에 시작합니다.
 su - cubrid -c "cubrid service restart"
+
+# sshd 서비스를 시작합니다.
+/usr/sbin/sshd
 
 tail -f /dev/null
