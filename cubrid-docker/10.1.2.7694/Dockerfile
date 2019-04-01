@@ -23,7 +23,8 @@ ENV LANG ko_KR.utf8
 
 RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""; \
     ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""; \
-    ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
+    ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""; \
+    chmod u+s /usr/bin/ping
 
 RUN mkdir /docker-entrypoint-initdb.d
 
@@ -38,16 +39,16 @@ RUN useradd cubrid; \
 
 RUN curl -o /home/cubrid/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz -O http://ftp.cubrid.org/CUBRID_Engine/$CUBRID_VERSION/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz > /dev/null 2>&1 \
     && tar -zxf /home/cubrid/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz -C /home/cubrid \
+    && echo 'java_stored_procedure=y' >> /home/cubrid/CUBRID/conf/cubrid.conf \
     && mkdir -p /home/cubrid/CUBRID/databases /home/cubrid/CUBRID/tmp /home/cubrid/CUBRID/var/CUBRID_SOCK
 
 COPY cubrid.sh /home/cubrid/
 
-RUN echo ''; \
+RUN echo '' >> /home/cubrid/.bash_profile; \
     echo 'umask 077' >> /home/cubrid/.bash_profile; \
-    echo ''; \
+    echo '' >> /home/cubrid/.bash_profile; \
     echo '. /home/cubrid/cubrid.sh' >> /home/cubrid/.bash_profile; \
-    chown -R cubrid:cubrid /home/cubrid; \
-    chmod u+s /usr/bin/ping
+    chown -R cubrid:cubrid /home/cubrid
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh; \
