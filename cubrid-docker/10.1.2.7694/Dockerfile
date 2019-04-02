@@ -13,6 +13,7 @@ RUN yum install -y epel-release; \
                    nc \
                    expect \
                    openssh-server \
+                   openssh-clients \
                    java-1.8.0-openjdk-devel; \
     yum clean all;
 
