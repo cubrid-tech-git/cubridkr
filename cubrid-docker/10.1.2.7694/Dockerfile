@@ -14,6 +14,7 @@ RUN yum install -y epel-release; \
                    expect \
                    openssh-server \
                    openssh-clients \
+                   sshpass \
                    java-1.8.0-openjdk-devel; \
     yum clean all;
 
@@ -46,6 +47,8 @@ RUN curl -o /home/cubrid/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz -O htt
 COPY cubrid.sh /home/cubrid/
 
 RUN echo '' >> /home/cubrid/.bash_profile; \
+    echo 'export LANG=ko_KR.utf8' >> /home/cubrid/.bash_profile; \
+    echo '' >> /home/cubrid/.bash_profile; \
     echo 'umask 077' >> /home/cubrid/.bash_profile; \
     echo '' >> /home/cubrid/.bash_profile; \
     echo '. /home/cubrid/cubrid.sh' >> /home/cubrid/.bash_profile; \

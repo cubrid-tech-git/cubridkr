@@ -46,6 +46,8 @@ RUN curl -o /home/cubrid/CUBRID-$CUBRID_BUILD_VERSION-linux.x86_64.tar.gz -O htt
 COPY cubrid.sh /home/cubrid/
 
 RUN echo '' >> /home/cubrid/.bash_profile; \
+    echo 'export LANG=ko_KR.utf8' >> /home/cubrid/.bash_profile; \
+    echo '' >> /home/cubrid/.bash_profile; \
     echo 'umask 077' >> /home/cubrid/.bash_profile; \
     echo ''>> /home/cubrid/.bash_profile; \
     echo '. /home/cubrid/cubrid.sh' >> /home/cubrid/.bash_profile; \
