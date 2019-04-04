@@ -11,6 +11,7 @@ RUN yum install -y epel-release; \
                    net-tools \
                    telnet \
                    nc \
+                   wget \
                    expect \
                    openssh-server \
                    openssh-clients \
