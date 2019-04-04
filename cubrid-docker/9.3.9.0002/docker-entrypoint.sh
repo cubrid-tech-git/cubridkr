@@ -67,6 +67,8 @@ if [[ ! -e $(su - cubrid -c "echo \$CUBRID_DATABASES")/cubrid_databases.lck ]]; 
     fi
 
     su - cubrid -c "touch \$CUBRID_DATABASES/cubrid_databases.lck"
+elif [[ "$CUBRID_DATABASE" == $(cat $(su - cubrid -c "echo \$CUBRID_DATABASES")/databases.txt | grep $CUBRID_DATABASE | awk '{print $1}') ]]; then
+    su - cubrid -c "sed s/#server=foo,bar/server=$CUBRID_DATABASE/g -i \$CUBRID/conf/cubrid.conf"
 fi
 
 # '/docker-entrypoint-initdb.d' 디렉터리에 있는 '*.sql' 파일들을 csql 유틸리티로 실행합니다.
