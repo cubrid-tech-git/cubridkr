@@ -2,14 +2,13 @@ FROM centos:7
 
 MAINTAINER Joo Youngjin <youngjinj@cubrid.com>
 
-ENV CUBRID_VERSION 9.3.9
-ENV CUBRID_BUILD_VERSION 9.3.9.0002
+ENV CUBRID_VERSION 10.1.2
 
 RUN yum install -y epel-release; \
     yum update -y; \
     yum install -y sudo \
                    vim \
-                   which \ 
+                   which \
                    net-tools \
                    telnet \
                    nc \
@@ -18,8 +17,23 @@ RUN yum install -y epel-release; \
                    openssh-server \
                    openssh-clients \
                    sshpass \
-                   java-1.8.0-openjdk-devel; \
-    yum clean all
+                   java-1.8.0-openjdk-devel \
+                   git \
+                   cmake \
+                   gcc-c++ \
+                   systemtap \
+                   systemtap-sdt-devel \
+                   bison \
+                   flex \
+                   ncurses-devel \
+                   ant \
+                   elfutils-libelf-devel \
+                   libtool \
+                   rpm-build \
+                   gdb \
+                   ctags \
+                   cscope; \
+    yum clean all;
 
 RUN localedef -f UTF-8 -i ko_KR ko_KR.utf8; \
     ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
@@ -42,8 +56,10 @@ RUN useradd cubrid; \
     cubrid\t\t hard\t core\t\t 0\n' -i /etc/security/limits.conf; \
     echo -e "\ncubrid     soft    nproc     16384\ncubrid     hard    nproc     16384" >> /etc/security/limits.d/20-nproc.conf
 
-RUN curl -L -o /home/cubrid/CUBRID-${CUBRID_BUILD_VERSION}-linux.x86_64.tar.gz -O http://ftp.cubrid.org/CUBRID_Engine/${CUBRID_VERSION}/CUBRID-${CUBRID_BUILD_VERSION}-linux.x86_64.tar.gz > /dev/null 2>&1 \
-    && tar -zxf /home/cubrid/CUBRID-${CUBRID_BUILD_VERSION}-linux.x86_64.tar.gz -C /home/cubrid \
+RUN curl -L -o /home/cubrid/v${CUBRID_VERSION}.tar.gz -O https://github.com/CUBRID/cubrid/archive/v${CUBRID_VERSION}.tar.gz \
+    && tar -zxf /home/cubrid/v${CUBRID_VERSION}.tar.gz -C /home/cubrid
+
+RUN cd /home/cubrid/cubrid-${CUBRID_VERSION} && ./build.sh -m debug -p /home/cubrid/CUBRID -j /usr/lib/jvm/java build \
     && echo 'java_stored_procedure=y' >> /home/cubrid/CUBRID/conf/cubrid.conf \
     && mkdir -p /home/cubrid/CUBRID/databases /home/cubrid/CUBRID/tmp /home/cubrid/CUBRID/var/CUBRID_SOCK
 

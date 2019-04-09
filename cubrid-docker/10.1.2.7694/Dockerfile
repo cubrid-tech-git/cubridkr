@@ -8,6 +8,8 @@ ENV CUBRID_BUILD_VERSION 10.1.2.7694-64632b2
 RUN yum install -y epel-release; \
     yum update -y; \
     yum install -y sudo \
+                   vim \
+                   which \
                    net-tools \
                    telnet \
                    nc \
@@ -17,7 +19,7 @@ RUN yum install -y epel-release; \
                    openssh-clients \
                    sshpass \
                    java-1.8.0-openjdk-devel; \
-    yum clean all;
+    yum clean all
 
 RUN localedef -f UTF-8 -i ko_KR ko_KR.utf8; \
     ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
@@ -40,8 +42,8 @@ RUN useradd cubrid; \
     cubrid\t\t hard\t core\t\t 0\n' -i /etc/security/limits.conf; \
     echo -e "\ncubrid     soft    nproc     16384\ncubrid     hard    nproc     16384" >> /etc/security/limits.d/20-nproc.conf
 
-RUN curl -o /home/cubrid/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz -O http://ftp.cubrid.org/CUBRID_Engine/$CUBRID_VERSION/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz > /dev/null 2>&1 \
-    && tar -zxf /home/cubrid/CUBRID-$CUBRID_BUILD_VERSION-Linux.x86_64.tar.gz -C /home/cubrid \
+RUN curl -L -o /home/cubrid/CUBRID-${CUBRID_BUILD_VERSION}-Linux.x86_64.tar.gz -O http://ftp.cubrid.org/CUBRID_Engine/${CUBRID_VERSION}/CUBRID-${CUBRID_BUILD_VERSION}-Linux.x86_64.tar.gz > /dev/null 2>&1 \
+    && tar -zxf /home/cubrid/CUBRID-${CUBRID_BUILD_VERSION}-Linux.x86_64.tar.gz -C /home/cubrid \
     && echo 'java_stored_procedure=y' >> /home/cubrid/CUBRID/conf/cubrid.conf \
     && mkdir -p /home/cubrid/CUBRID/databases /home/cubrid/CUBRID/tmp /home/cubrid/CUBRID/var/CUBRID_SOCK
 
