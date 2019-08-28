@@ -2,7 +2,7 @@ FROM centos:7
 
 MAINTAINER Joo Youngjin <youngjinj@cubrid.com>
 
-ENV CUBRID_VERSION 10.1.2
+ENV CUBRID_VERSION 10.1.3
 
 RUN yum update -y \
     ; yum install -y epel-release \
