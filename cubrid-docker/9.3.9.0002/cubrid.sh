@@ -10,7 +10,14 @@ export LIBPATH=$LD_LIBRARY_PATH
 export PATH=$CUBRID/bin:$PATH
 
 export TMPDIR=$CUBRID/tmp
+if [ ! -d $TMPDIR ]; then
+    mkdir -p $TMPDIR
+fi
+
 export CUBRID_TMP=$CUBRID/var/CUBRID_SOCK
+if [ ! -d $CUBRID_TMP ]; then
+    mkdir -p $CUBRID_TMP
+fi
 
 export JAVA_HOME=/usr/lib/jvm/java
 export PATH=$JAVA_HOME/bin:$PATH
