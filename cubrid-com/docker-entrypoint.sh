@@ -9,4 +9,5 @@ fi
 chown -R www:www-data /var/www/html
 
 service ssh start \
+service vsftpd start \
 ; docker-php-entrypoint $@

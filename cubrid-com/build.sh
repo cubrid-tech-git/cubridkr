@@ -1,1 +1,1 @@
-docker build --rm -t cubridkr/cubrid-com:latest .
+docker build --rm -t cubridkr/cubrid-com:20200131 .

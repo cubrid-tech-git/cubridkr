@@ -1,1 +1,1 @@
-docker push cubridkr/cubrid-com:latest
+docker push cubridkr/cubrid-com:20200131

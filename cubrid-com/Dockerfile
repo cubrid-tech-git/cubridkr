@@ -7,6 +7,7 @@ RUN apt-get update -y \
                          openssh-server \
                          openssh-client \
                          locales \
+                         vsftpd \
     ; apt-get clean
 
 RUN localedef -f UTF-8 -i ko_KR ko_KR.utf8 \
@@ -46,7 +47,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
 
 WORKDIR /var/www/html
 
-EXPOSE 22 80
+EXPOSE 21 22 80
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
