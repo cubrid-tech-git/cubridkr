@@ -8,6 +8,8 @@ fi
 
 chown -R www:www-data /var/www/html
 
+sed s/#\ write_enable=YES/write_enable=YES/g -i i/etc/vsftpd.conf
+
 service ssh start \
-service vsftpd start \
+; service vsftpd start \
 ; docker-php-entrypoint $@
