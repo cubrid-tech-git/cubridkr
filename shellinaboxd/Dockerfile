@@ -18,8 +18,7 @@ ENV LANGUAGE ko_KR.utf8
 
 RUN useradd centos \
     && echo 'centos:password' | chpasswd \
-    && sed 102s/#\ %wheel/%wheel/ -i /etc/sudoers \
-    && sed s/wheel:x:10:/wheel:x:10:centos/ -i /etc/group
+    && usermod -aG wheel centos
 
 EXPOSE 4200
 
